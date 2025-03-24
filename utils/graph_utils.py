@@ -1,3 +1,4 @@
+import itertools
 import random
 
 
@@ -15,6 +16,8 @@ def load_graph_from_file(file):
             if line.strip():
                 src, dest, weight = map(int, line.strip().split())
                 edges.append((src, dest, weight))
+    print(f"Liczba wierzchołków: {num_vertices}")
+    print(f"Krawędzie: {edges}")
     return num_vertices, edges
 
 
@@ -27,7 +30,9 @@ def random_probe(num_vertices):
     random_probe_list = []
     for _ in range(num_vertices):
         random_probe_list.append(random.randint(0, 1))
+    print(f"Random_probe_list: {random_probe_list}")
     return random_probe_list
+
 
 def goal_function(num_vertices, edges, random_probe_list):
     """
@@ -51,7 +56,7 @@ def goal_function(num_vertices, edges, random_probe_list):
     return cut // 2
 
 
-def generate_neigbours(num_vertices, random_probe_list):
+def generate_neighbours(num_vertices, random_probe_list):
     """
     Tworzymy sasiądów, wszystkie możliwe rozwiązania - rózniącę się od siebie jednym wierzchołkiem
     :param num_vertices: liczba wierzchołków
@@ -60,6 +65,7 @@ def generate_neigbours(num_vertices, random_probe_list):
     """
 
     neighbours = []
+    print(f"Random_probe_list: {random_probe_list}")
     for i in range(num_vertices):
         neighbour = random_probe_list.copy()
         neighbour[i] = 1 - neighbour[i]
@@ -67,3 +73,14 @@ def generate_neigbours(num_vertices, random_probe_list):
 
     return neighbours
 
+
+def generate_all_solutions(num_vertices):
+    """
+    Generujemy WSZYSTKIE możliwe kombinacje podziałów wierzchołków
+    :param num_vertices: liczba wierzchołków
+    :return: lista wszystkich możliwych rozwiązań
+    """
+    all_solutions = []
+    for solution in itertools.product([0, 1], repeat=num_vertices):
+        all_solutions.append(list(solution))
+    return all_solutions
