@@ -9,7 +9,7 @@ def load_graph_from_file(file):
     :return: liczba wierzchołków, lista krawędzi
     """
     edges = []
-    with open(file, 'r') as f:
+    with open(file, "r") as f:
         lines = f.readlines()
         num_vertices = int(lines[0].strip())
         for line in lines[1:]:
@@ -65,7 +65,6 @@ def generate_neighbours(num_vertices, random_probe_list):
     """
 
     neighbours = []
-    print(f"Random_probe_list: {random_probe_list}")
     for i in range(num_vertices):
         neighbour = random_probe_list.copy()
         neighbour[i] = 1 - neighbour[i]
