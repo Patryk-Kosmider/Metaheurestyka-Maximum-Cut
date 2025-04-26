@@ -34,26 +34,25 @@ def random_probe(num_vertices):
     return random_probe_list
 
 
-def goal_function(num_vertices, edges, random_probe_list):
+def goal_function(edges, random_probe_list):
     """
     Funkcja celu -> celem jest uzyskanie maksymalnej sumy wag krawędzi przeciętych
     przez podział wierzchołków na dwa zbiory
-    :param num_vertices: liczba wierzchołków
     :param edges: lista krawędzi
     :param random_probe_list: losowo wygenerowana lista z random_probe()
     :return: suma wag przeciętych krawędzi
     """
     cut = 0
-
-    set_0 = [i for i in range(num_vertices) if random_probe_list[i] == 0]
-    set_1 = [i for i in range(num_vertices) if random_probe_list[i] == 1]
+    seen = set()
 
     for src, dest, weight in edges:
-        if (src in set_0 and dest in set_1) or (src in set_1 and dest in set_0):
-            cut = cut + weight
+        if (src, dest) not in seen and (dest, src) not in seen:
+            if random_probe_list[src] != random_probe_list[dest]:
+                cut += weight
+            seen.add((src, dest))
+            seen.add((dest, src))
 
-    # Graf jest nieskierowany, czyli krawędzie bedą się powtarzać, w odwrotnej kolejności
-    return cut // 2
+    return cut
 
 
 def generate_neighbours(num_vertices, random_probe_list):

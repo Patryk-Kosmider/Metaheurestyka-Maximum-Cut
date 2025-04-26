@@ -14,7 +14,7 @@ def full_search(num_vertices, edges):
 
     all_solutions = generate_all_solutions(num_vertices)
     for solution in all_solutions:
-        current_cut = goal_function(num_vertices, edges, solution)
+        current_cut = goal_function(edges, solution)
         print(f"Rozwiązanie: {solution}, max cięce: {current_cut}")
         if current_cut > best_cut:
             best_cut = current_cut

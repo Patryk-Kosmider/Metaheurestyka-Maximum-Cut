@@ -16,7 +16,7 @@ def hill_climbing_random(num_vertices, edges, max_iterations=100):
     :return: maksymalne cięcie
     """
     solution = random_probe(num_vertices)
-    cut = goal_function(num_vertices, edges, solution)
+    cut = goal_function(edges, solution)
 
     print(f"Punkt startowy: {solution}, cięcie: {cut}")
 
@@ -26,7 +26,7 @@ def hill_climbing_random(num_vertices, edges, max_iterations=100):
         print(f"Iteracja {i+1}:")
         neighbours = generate_neighbours(num_vertices, solution)
         neighbour = random.choice(neighbours)
-        neighbour_cut = goal_function(num_vertices, edges, neighbour)
+        neighbour_cut = goal_function(edges, neighbour)
 
         print(f"Losowy sąsiad: {neighbour}, cięcie: {neighbour_cut}")
 

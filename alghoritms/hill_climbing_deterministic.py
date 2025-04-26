@@ -18,7 +18,7 @@ def hill_climbing_deterministic(num_vertices, edges, max_iterations=100):
     """
 
     solution = random_probe(num_vertices)
-    cut = goal_function(num_vertices, edges, solution)
+    cut = goal_function(edges, solution)
     best_neighbour = solution
     best_cut = cut
 
@@ -31,7 +31,7 @@ def hill_climbing_deterministic(num_vertices, edges, max_iterations=100):
         neighbours = generate_neighbours(num_vertices, solution)
         print(f"Sasiędzi: {neighbours}")
         for neighbour in neighbours:
-            neighbour_cut = goal_function(num_vertices, edges, neighbour)
+            neighbour_cut = goal_function(edges, neighbour)
             print(f"Sąsiad: {neighbour}, max cięcie: {neighbour_cut}")
             if neighbour_cut > cut:
                 best_neighbour = neighbour

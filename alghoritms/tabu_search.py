@@ -10,55 +10,62 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
     :param tabu_size: rozmiar listy tabu
     :return: najlepsze cięcie
     """
-    i = 0
-    tabu_list = []
 
-    solution = random_probe(num_vertices)
-    cut = goal_function(num_vertices, edges, solution)
+def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
+        """
+        Klasyczny algorytm tabu dla Max-Cut
+        """
+        i = 0
+        tabu_list = []
 
-    print(f"Punkt startowy: {solution}, cięcie: {cut}")
+        solution = random_probe(num_vertices)
+        cut = goal_function(edges, solution)
 
-    best_solution = solution
-    best_cut = cut
+        print(f"Punkt startowy: {solution}, cięcie: {cut}")
 
-    while i < max_iterations:
-        print(f"Iteracja {i + 1}:")
-        neighbours = generate_neighbours(num_vertices, solution)
-        neighbour_cut = 0
-        move = 0
-        neighbour = None
+        best_solution = solution[:]
+        best_cut = cut
 
-        for n, neigh in enumerate(neighbours):
-            neigh_cut = goal_function(num_vertices, edges, neigh)
-            print(f"Sąsiad {n}: {neigh}, cięcie: {neigh_cut}")
-            if (n not in tabu_list or neigh_cut > best_cut) and neigh_cut > neighbour_cut:
-                print(f"Nowy sąsiad {n}, cięcie: {neigh_cut}")
+        while i < max_iterations:
+            print(f"Iteracja {i + 1}:")
+            best_neighbour = None
+            best_neighbour_cut = -1
+            best_move = None
 
-                neighbour_cut = neigh_cut
-                neighbour = neigh
-                move = n
+            for vertex in range(num_vertices):
+                neighbour = solution.copy()
+                neighbour[vertex] = 1 - neighbour[vertex]
+                neigh_cut = goal_function(edges, neighbour)
 
-        if neighbour is None:
-            print("Brak kolejnych ruchów")
-            break
+                move = vertex
 
-        solution = neighbour
-        cut = neighbour_cut
+                if (move not in tabu_list) or (neigh_cut > best_cut):
+                    if neigh_cut > best_neighbour_cut:
+                        best_neighbour = neighbour
+                        best_neighbour_cut = neigh_cut
+                        best_move = move
 
-        tabu_list.append(move)
-        if len(tabu_list) > tabu_size:
-            tabu_list.pop(0)
+            if best_neighbour is None:
+                print("Brak dostępnych ruchów, koniec.")
+                break
 
-        print(f"Lista tabu: {tabu_list}")
+            solution = best_neighbour
+            cut = best_neighbour_cut
 
-        if cut > best_cut:
-            best_cut = cut
-            best_solution = neighbour
-            print(f"Przechodzimy do {best_solution}, cięcie: {best_cut}")
+            tabu_list.append(best_move)
+            if len(tabu_list) > tabu_size:
+                tabu_list.pop(0)
 
-        i += 1
+            print(f"Lista tabu: {tabu_list}")
 
-    return best_cut, best_solution
+            if cut > best_cut:
+                best_cut = cut
+                best_solution = solution[:]
+                print(f"Nowe najlepsze rozwiązanie: {best_solution}, cięcie: {best_cut}")
+
+            i += 1
+
+        return best_cut, best_solution
 
 
 num_vertices, edges = load_graph_from_file('../graphs/graph10.txt')
@@ -68,4 +75,4 @@ print("------------------------TABU SEARCH------------------------------------")
 max_cut, best_solution = tabu_search(num_vertices, edges)
 print(f"  Wartość cięcia: {max_cut}")
 print(f"  Rozwiązanie: {best_solution}")
-print(f"  Weryfikacja: {goal_function(num_vertices, edges, best_solution)}")
+print(f"  Weryfikacja: {goal_function(edges, best_solution)}")
