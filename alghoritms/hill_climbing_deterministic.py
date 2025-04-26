@@ -14,7 +14,6 @@ def hill_climbing_deterministic(num_vertices, edges, max_iterations=100):
     :param max_iterations: ilość iteracji, by algorytm nie utknął
     :return: maksymalne cięcie
     """
-
     solution = random_probe(num_vertices)
     cut = goal_function(edges, solution)
     best_neighbour = solution
@@ -22,25 +21,39 @@ def hill_climbing_deterministic(num_vertices, edges, max_iterations=100):
 
     print(f"Punkt startowy: {solution}, cięcie: {cut}")
 
-    i = 0
+    print(
+        f"\n{'Iteracja':<10} {'Bieżące rozwiązanie':<30} {'Cięcie':<10} {'Najlepszy sąsiad':<30} {'Cięcie sąsiada':<15} {'Akcja':<20}"
+    )
+    print("-" * 110)
 
+    i = 0
     while i < max_iterations:
-        print(f"Iteracja {i+1}:")
         neighbours = generate_neighbours(num_vertices, solution)
-        print(f"Sasiędzi: {neighbours}")
+
         for neighbour in neighbours:
             neighbour_cut = goal_function(edges, neighbour)
-            print(f"Sąsiad: {neighbour}, max cięcie: {neighbour_cut}")
-            if neighbour_cut > cut:
+            if neighbour_cut > best_cut:
                 best_neighbour = neighbour
                 best_cut = neighbour_cut
+
+        action = ""
         if best_cut <= cut:
-            print(f"Brak lepszego sasiąda - optimum lokalne")
+            action = "Optimum lokalne, koniec"
+            print(
+                f"{i + 1:<10} {str(solution):<30} {cut:<10} {'-':<30} {'-':<15} {action:<20}"
+            )
             break
-        print(f"Przechodzimy do {best_neighbour}, cięcie: {best_cut}")
-        solution = best_neighbour
-        cut = best_cut
+        else:
+            action = "Przechodzimy do sąsiada"
+            solution = best_neighbour
+            cut = best_cut
+
+        print(
+            f"{i + 1:<10} {str(solution):<30} {cut:<10} {str(best_neighbour):<30} {best_cut:<15} {action:<20}"
+        )
+
         i += 1
+
     return solution, cut, i
 
 
@@ -60,11 +73,16 @@ if __name__ == "__main__":
     num_vertices, edges = load_graph_from_file(args.input)
 
     print(
-        "------------------------HILL CLIMBING DETERMINISTYCZNY------------------------------------"
+        "\n------------------------HILL CLIMBING DETERMINISTYCZNY------------------------------------"
     )
+    print(f"Parametry: max_iterations={args.max_iterations}\n")
+
     solution, cut, i = hill_climbing_deterministic(
         num_vertices, edges, args.max_iterations
     )
-    print(
-        f"Najlepsze rozwiązanie: {solution}, wartość cięcia: {cut}, ilość iteracji {i}"
-    )
+
+    print("\nPodsumowanie:")
+    print(f"Najlepsze rozwiązanie: {solution}")
+    print(f"Wartość cięcia: {cut}")
+    print(f"Weryfikacja: {goal_function(edges, solution)}")
+    print(f"Liczba wykonanych iteracji: {i}")

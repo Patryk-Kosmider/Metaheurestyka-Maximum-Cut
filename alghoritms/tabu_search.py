@@ -15,14 +15,17 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
 
     solution = random_probe(num_vertices)
     cut = goal_function(edges, solution)
-
     print(f"Punkt startowy: {solution}, cięcie: {cut}")
 
     best_solution = solution[:]
     best_cut = cut
 
+    print(
+        f"\n{'Iteracja':<10} {'Bieżące rozwiązanie':<30} {'Cięcie':<10} {'Najlepszy sąsiad':<30} {'Cięcie sąsiada':<15} {'Ruch':<10} {'Lista tabu':<20} {'Akcja':<20}"
+    )
+    print("-" * 120)
+
     while i < max_iterations:
-        print(f"Iteracja {i + 1}:")
         best_neighbour = None
         best_neighbour_cut = -1
         best_move = None
@@ -41,7 +44,9 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
                     best_move = move
 
         if best_neighbour is None:
-            print("Brak dostępnych ruchów, koniec.")
+            print(
+                f"{i + 1:<10} {str(solution):<30} {cut:<10} {'-':<30} {'-':<15} {'-':<10} {str(tabu_list):<20} Brak dostępnych ruchów"
+            )
             break
 
         solution = best_neighbour
@@ -51,12 +56,15 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
         if len(tabu_list) > tabu_size:
             tabu_list.pop(0)
 
-        print(f"Lista tabu: {tabu_list}")
-
+        action = ""
         if cut > best_cut:
             best_cut = cut
             best_solution = solution[:]
-            print(f"Nowe najlepsze rozwiązanie: {best_solution}, cięcie: {best_cut}")
+            action = "Nowy najlepszy wynik"
+
+        print(
+            f"{i + 1:<10} {str(solution):<30} {cut:<10} {str(best_neighbour):<30} {best_neighbour_cut:<15} {best_move:<10} {str(tabu_list):<20} {action:<20}"
+        )
 
         i += 1
 
@@ -66,7 +74,7 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Hill Climbing Losowy")
+    parser = argparse.ArgumentParser(description="Tabu Search for Maximum Cut problem")
     parser.add_argument(
         "--input", type=str, required=True, help="Ścieżka do pliku z grafem"
     )
@@ -74,15 +82,21 @@ if __name__ == "__main__":
         "--max_iterations", type=int, default=100, help="Maksymalna liczba iteracji"
     )
     parser.add_argument("--tabu_size", type=int, default=10, help="Rozmiar tabu")
+
     args = parser.parse_args()
 
     num_vertices, edges = load_graph_from_file(args.input)
 
-    print("------------------------TABU SEARCH------------------------------------")
+    print("\n------------------------TABU SEARCH------------------------------------")
+    print(
+        f"Parametry: max_iterations={args.max_iterations}, tabu_size={args.tabu_size}\n"
+    )
 
     max_cut, best_solution = tabu_search(
         num_vertices, edges, args.max_iterations, args.tabu_size
     )
-    print(f"  Wartość cięcia: {max_cut}")
-    print(f"  Rozwiązanie: {best_solution}")
-    print(f"  Weryfikacja: {goal_function(edges, best_solution)}")
+
+    print("\nPodsumowanie:")
+    print(f"Wartość cięcia: {max_cut}")
+    print(f"Najlepsze rozwiązanie: {best_solution}")
+    print(f"Weryfikacja: {goal_function(edges, best_solution)}")
