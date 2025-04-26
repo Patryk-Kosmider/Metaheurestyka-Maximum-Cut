@@ -1,11 +1,12 @@
 import random
 
-from utils.graph_utils import (
+from graph_utils import (
     random_probe,
     goal_function,
     generate_neighbours,
     load_graph_from_file,
 )
+
 
 def hill_climbing_random(num_vertices, edges, max_iterations=100):
     """
@@ -40,12 +41,26 @@ def hill_climbing_random(num_vertices, edges, max_iterations=100):
         i += 1
     return solution, cut, i
 
-num_vertices, edges = load_graph_from_file("../graphs/graph10.txt")
 
-print(
-    "------------------------HILL CLIMBING LOSOWY------------------------------------"
-)
-solutionR, cutR, iR = hill_climbing_random(num_vertices, edges)
-print(
-    f"Najlepsze rozwiązanie: {solutionR}, wartość cięcia: {cutR}, ilość iteracji {iR}"
-)
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Hill Climbing Losowy")
+    parser.add_argument(
+        "--input", type=str, required=True, help="Ścieżka do pliku z grafem"
+    )
+    parser.add_argument(
+        "--max_iterations", type=int, default=100, help="Maksymalna liczba iteracji"
+    )
+
+    args = parser.parse_args()
+
+    num_vertices, edges = load_graph_from_file(args.input)
+
+    print(
+        "------------------------HILL CLIMBING LOSOWY------------------------------------"
+    )
+    solutionR, cutR, iR = hill_climbing_random(num_vertices, edges, args.max_iterations)
+    print(
+        f"Najlepsze rozwiązanie: {solutionR}, wartość cięcia: {cutR}, ilość iteracji {iR}"
+    )

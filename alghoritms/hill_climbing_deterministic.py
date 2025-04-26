@@ -1,6 +1,4 @@
-import random
-
-from utils.graph_utils import (
+from graph_utils import (
     random_probe,
     goal_function,
     generate_neighbours,
@@ -46,11 +44,27 @@ def hill_climbing_deterministic(num_vertices, edges, max_iterations=100):
     return solution, cut, i
 
 
-num_vertices, edges = load_graph_from_file("../graphs/graph10.txt")
+if __name__ == "__main__":
+    import argparse
 
-print(
-    "------------------------HILL CLIMBING DETERMINISTYCZNY------------------------------------"
-)
-solution, cut, i = hill_climbing_deterministic(num_vertices, edges)
-print(f"Najlepsze rozwiązanie: {solution}, wartość cięcia: {cut}, ilość iteracji {i}")
+    parser = argparse.ArgumentParser(description="Hill Climbing Deterministyczny")
+    parser.add_argument(
+        "--input", type=str, required=True, help="Ścieżka do pliku z grafem"
+    )
+    parser.add_argument(
+        "--max_iterations", type=int, default=100, help="Maksymalna liczba iteracji"
+    )
 
+    args = parser.parse_args()
+
+    num_vertices, edges = load_graph_from_file(args.input)
+
+    print(
+        "------------------------HILL CLIMBING DETERMINISTYCZNY------------------------------------"
+    )
+    solution, cut, i = hill_climbing_deterministic(
+        num_vertices, edges, args.max_iterations
+    )
+    print(
+        f"Najlepsze rozwiązanie: {solution}, wartość cięcia: {cut}, ilość iteracji {i}"
+    )
