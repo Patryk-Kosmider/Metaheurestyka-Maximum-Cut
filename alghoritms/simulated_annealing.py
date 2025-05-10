@@ -25,7 +25,7 @@ def sim_annealing(num_vertices, edges, max_iterations, T, T0, alpha):
        :return: maksymalne cięcie
     """
     s = random_probe(num_vertices)
-
+    initial_start_point = s[:]
     V = [s]
     best_s = s
     best_value = goal_function(edges, s)
@@ -75,7 +75,7 @@ def sim_annealing(num_vertices, edges, max_iterations, T, T0, alpha):
         best_value,
         V,
         [goal_function(edges, e) for e in V],
-        s,
+        initial_start_point,
     )
 
 
