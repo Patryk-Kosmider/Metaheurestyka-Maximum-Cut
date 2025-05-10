@@ -1,6 +1,5 @@
 from graph_utils import random_probe, goal_function, load_graph_from_file
 
-
 def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
     """
     Klasyczny algorytm tabu z losowym startem
@@ -11,7 +10,7 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
     :return: najlepsze cięcie
     """
     i = 0
-    tabu_list = []
+    tabu_list = []  # Będzie przechowywać całe rozwiązania (partycje), a nie tylko wierzchołki
 
     solution = random_probe(num_vertices)
     cut = goal_function(edges, solution)
@@ -37,7 +36,7 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
 
             move = vertex
 
-            if (move not in tabu_list) or (neigh_cut > best_cut):
+            if neighbour not in tabu_list or neigh_cut > best_cut:
                 if neigh_cut > best_neighbour_cut:
                     best_neighbour = neighbour
                     best_neighbour_cut = neigh_cut
@@ -52,7 +51,8 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
         solution = best_neighbour
         cut = best_neighbour_cut
 
-        tabu_list.append(best_move)
+        tabu_list.append(best_neighbour)
+
         if len(tabu_list) > tabu_size:
             tabu_list.pop(0)
 
