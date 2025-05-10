@@ -30,7 +30,6 @@ def random_probe(num_vertices):
     random_probe_list = []
     for _ in range(num_vertices):
         random_probe_list.append(random.randint(0, 1))
-    print(f"Random_probe_list: {random_probe_list}")
     return random_probe_list
 
 
