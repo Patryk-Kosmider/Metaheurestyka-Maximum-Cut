@@ -30,18 +30,16 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
         best_neighbour_cut = -1
         best_move = None
 
-        for vertex in range(num_vertices):
-            neighbour = solution.copy()
-            neighbour[vertex] = 1 - neighbour[vertex]
+        neighbours = generate_neighbours(num_vertices, solution)
+
+        for neighbour in neighbours:
             neigh_cut = goal_function(edges, neighbour)
 
-            move = vertex
-
-            if (move not in tabu_list) or (neigh_cut > best_cut):
+            if neighbour not in tabu_list or neigh_cut > best_cut:
                 if neigh_cut > best_neighbour_cut:
                     best_neighbour = neighbour
                     best_neighbour_cut = neigh_cut
-                    best_move = move
+                    best_move = neighbour  # Przechowujemy całego sąsiada
 
         if best_neighbour is None:
             print(
@@ -52,7 +50,8 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
         solution = best_neighbour
         cut = best_neighbour_cut
 
-        tabu_list.append(best_move)
+        
+        tabu_list.append(best_neighbour)
         if len(tabu_list) > tabu_size:
             tabu_list.pop(0)
 
@@ -63,7 +62,7 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
             action = "Nowy najlepszy wynik"
 
         print(
-            f"{i + 1:<10} {str(solution):<30} {cut:<10} {str(best_neighbour):<30} {best_neighbour_cut:<15} {best_move:<10} {str(tabu_list):<20} {action:<20}"
+            f"{i + 1:<10} {str(solution):<30} {cut:<10} {str(best_neighbour):<30} {best_neighbour_cut:<15} {str(best_move):<10} {str(tabu_list):<20} {action:<20}"
         )
 
         i += 1
@@ -99,4 +98,3 @@ if __name__ == "__main__":
     print("\nPodsumowanie:")
     print(f"Wartość cięcia: {max_cut}")
     print(f"Najlepsze rozwiązanie: {best_solution}")
-    print(f"Weryfikacja: {goal_function(edges, best_solution)}")
