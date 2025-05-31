@@ -1,12 +1,6 @@
 import random
-from graph_utils import (
-    load_graph_from_file,
-    random_probe,
-    goal_function,
-)
-
-
-# Krzyzowanie jednopunktowe -> zamiana fragementow miedzy rodzicami z losowym wyborem punktu podzialu
+import argparse
+from graph_utils import load_graph_from_file, random_probe, goal_function
 
 
 def crossover_onepoint_random(parent1, parent2):
@@ -32,7 +26,7 @@ def crossover_uniform(parent1, parent2, crossover_rate=0.5):
     :return: Zwraca jedno i drugie dziecko, powstale w wyniku wymieszania genow miedzy rodzicami
     """
     child1, child2 = [], []
-    for i in range(0, len(parent1)):
+    for i in range(len(parent1)):
         if random.random() < crossover_rate:
             child1.append(parent1[i])
             child2.append(parent2[i])
@@ -64,7 +58,7 @@ def mutate_multiplepoint(solution, mutation_rate=0.2):
     :return: Lista z odwroconymi wierzcholkami
     """
     mutated = solution[:]
-    for i in range(0, len(mutated)):
+    for i in range(len(mutated)):
         if random.random() < mutation_rate:
             mutated[i] = 1 - mutated[i]
     return mutated
@@ -88,38 +82,28 @@ def selection_tournament(population, edges, k=3):
 def genetic_algorithm(
     num_vertices,
     edges,
-    max_generations,
-    population_size,
-    mutation_rate,
-    mutation_multiple_rate,
-    crossover_rate,
-    mutation_type,
     crossover_type,
-    max_no_improvement,
-    elite_size,
+    mutation_type,
+    stop_condition,
+    max_generations=100,
+    population_size=50,
+    mutation_rate=0.2,
+    mutation_multiple_rate=0.2,
+    crossover_rate=0.5,
+    max_no_improvement=20,
 ):
     population = [random_probe(num_vertices) for _ in range(population_size)]
     best_solution = max(population, key=lambda x: goal_function(edges, x))
     best_value = goal_function(edges, best_solution)
     no_improvement = 0
 
-    current_best_solution = None
-    current_best_value = 0
-
-    print(
-        f"{'Pokolenie': <10} {'Najlepsze cięcie': <20} {'Najlepsze rozwiązanie': <40}"
-    )
+    print(f"{'Generacja':<10} {'Najlepsze cięcie':<20} {'Najlepsze rozwiązanie':<40}")
     print("-" * 110)
 
     for generation in range(max_generations):
 
-        if elite_size > 0:
-            # Elita włączona -> zapisuje najlepsze wyniki
-            elite = sorted(
-                population, key=lambda x: goal_function(edges, x), reverse=True
-            )[:elite_size]
-
         new_population = []
+
         while len(new_population) < population_size:
             parent1 = selection_tournament(population, edges)
             parent2 = selection_tournament(population, edges)
@@ -144,123 +128,117 @@ def genetic_algorithm(
 
             new_population.extend([child1, child2])
 
-        population = new_population[: population_size - elite_size] + elite
+        population = new_population[:population_size]
 
         current_best_solution = max(population, key=lambda x: goal_function(edges, x))
         current_best_value = goal_function(edges, current_best_solution)
 
-        print(
-            f"{generation:<10} {current_best_value:<20} {str(current_best_solution):<40}"
-        )
+        print(f"{generation:<10} {current_best_value:<20} {str(current_best_solution):<40}")
+
 
         if current_best_value > best_value:
             best_value = current_best_value
             best_solution = current_best_solution
+            no_improvement = 0
         else:
             no_improvement += 1
 
-        if no_improvement >= max_no_improvement:
-            print(
-                f"Brak poprawy od {no_improvement} generacji - algorytm przerywa pracę"
-            )
-            break
+        # Warunek zakończenia
+        if stop_condition == "max_generations":
+            if generation + 1 >= max_generations:
+                print(f"Osiągnieto maksymalna ilość generacji, algorytm kończy działanie: {max_generations}")
+                break
+        elif stop_condition == "max_no_improvement":
+            if no_improvement >= max_no_improvement:
+                print(f"Osiągnieto maksymalną ilość generacji {no_improvement} bez poprawy, algorytm kończy działanie")
+                break
+        else:
+            if generation + 1 >= max_generations:
+                break
 
     return best_value, best_solution, generation, population
 
 
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser(description="Algorytm genetyczny")
+    parser.add_argument("--input", type=str, required=True, help="Ściężka do pliku z grafem")
     parser.add_argument(
-        "--input", type=str, required=True, help="Ścieżka do pliku z grafem"
-    )
-    parser.add_argument(
-        "--max_generations", type=int, default=100, help="Maksymalna liczba iteracji"
-    )
-    parser.add_argument(
-        "--population_size", type=int, default=50, help="Maksymalna liczba pokoleń"
-    )
-    parser.add_argument(
-        "--mutation_rate", type=float, default=0.2, help="Prawdopodobienstwo mutacji"
-    )
-    parser.add_argument(
-        "--mutation_multiple_rate",
-        type=float,
-        default=0.2,
-        help="Prawdopodobienstwo dokonania zamiany w mutacji multiple points",
-    )
-    parser.add_argument(
-        "--crossover_rate",
-        type=float,
-        default=0.2,
-        help="Prawdopodobienstwo dokonania zamiany w krzyzowaniu uniform",
+        "--crossover_type",
+        type=str,
+        choices=["onepoint", "uniform"],
+        required=True,
+        help="Metoda krzyżowania",
     )
     parser.add_argument(
         "--mutation_type",
         type=str,
-        required=True,
         choices=["onepoint", "multiplepoint"],
-        help="Typ mutacji",
-    )
-    parser.add_argument(
-        "--crossover_type",
-        type=str,
         required=True,
-        choices=["onepoint", "uniform"],
-        help="Typ krzyżowania",
+        help="Metoda mutacji",
     )
     parser.add_argument(
-        "--max_no_improvement",
+        "--stop_condition",
+        type=str,
+        choices=["max_generations", "max_no_improvement"],
+        required=True,
+        help="Warunek zakończenia działania",
+    )
+    parser.add_argument(
+        "--max_generations",
+        type=int,
+        default=100,
+        help="Maksymalna ilość generacji",
+    )
+    parser.add_argument(
+        "--max_generations_no_improvement",
         type=int,
         default=20,
-        help="Maksymalna liczba pokoleń bez poprawy",
+        help="Maksymalna ilość generacji bez poprawy",
     )
     parser.add_argument(
-        "--elite_size",
+        "--population_size",
         type=int,
-        default=0,
-        help="Ilosc elity, najlepszych rozwiazan do przechowania",
+        default=50,
+        help="Rozmiar populacji"
     )
 
     args = parser.parse_args()
+
     num_vertices, edges = load_graph_from_file(args.input)
 
+    print("\n--- Algorytm genetyczny ---")
     print(
-        "\n------------------------GENETYCZNY ALGORYTM------------------------------------"
-    )
-    print(
-        f"Wybrany typ mutacji: {args.mutation_type}, typ krzyzowania: {args.crossover_type}\n"
-        f"Ustalono: \n"
-        f" -Maksymalną ilość generacji: {args.max_generations}\n"
-        f" -Rozmiar populacji: {args.population_size}\n"
-        f" -Dopuszczalna ilość pokoleń bez poprawy: {args.max_no_improvement}\n"
-        f" -Prawdopodobieństwo dokonania mutacji: {args.mutation_rate}\n"
-        f" -Prawdopodobieństwo dokonania zmiany dla uniform krzyzowania (jeśli wybrano): {args.crossover_rate}\n"
-        f" -Prawdopodobieństwo dokonania zmiany dla mutacji multiplepoint (jeśli wybrano): {args.mutation_multiple_rate}\n"
-        f" -Elita: {args.elite_size}"
+        f"Metoda krzyżowania: {args.crossover_type}\n"
+        f"Metoda mutacji: {args.mutation_type}\n"
+        f"Warunek zakończenia działania: {args.stop_condition}\n"
+        f"Maksymalna ilość generacji: 100\n"
+        f"Rozmiar populacji: 50\n"
+        f"Mutation rate: 0.2\n"
+        f"Multiple mutation rate: 0.2\n"
+        f"Crossover uniform rate: 0.5\n"
+        f"Max no improvement generations: 20\n"
     )
 
     best_value, best_solution, generation, population = genetic_algorithm(
         num_vertices,
         edges,
-        args.max_generations,
-        args.population_size,
-        args.mutation_rate,
-        args.mutation_multiple_rate,
-        args.crossover_rate,
-        args.mutation_type,
-        args.crossover_type,
-        args.max_no_improvement,
-        args.elite_size,
+        crossover_type=args.crossover_type,
+        mutation_type=args.mutation_type,
+        stop_condition=args.stop_condition,
+        max_generations=args.max_generations,
+        population_size=args.population_size,
+        mutation_rate=0.2,
+        mutation_multiple_rate=0.2,
+        crossover_rate=0.5,
+        max_no_improvement=args.max_generations_no_improvement,
     )
 
     start_point = population[0]
     start_cut = goal_function(edges, start_point)
 
-    print("\nPODSUMOWANIE:")
+    print("\nPodsumowanie:")
     print(f"Punkt startowy: {start_point}, cięcie: {start_cut}")
     print(f"Najlepsze rozwiązanie: {best_solution}, cięcie: {best_value}")
-    print(f"Weryfikacja funkcji celu: {goal_function(edges, best_solution)}")
-    print(f"Liczba pokoleń: {generation + 1}")
-    print(f"Liczba odwiedzonych rozwiązań: {(generation + 1) * args.population_size}")
+    print(f"Weryfikacja: {goal_function(edges, best_solution)}")
+    print(f"Ilość generacji: {generation + 1}")
+    print(f"Odwiedzono rozwiązań: {(generation + 1) * 50}")

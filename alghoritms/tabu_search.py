@@ -1,6 +1,7 @@
-from graph_utils import random_probe, goal_function, load_graph_from_file
+from graph_utils import random_probe, goal_function, load_graph_from_file, generate_neighbours,back_to_work_point
 
-def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
+
+def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10, history_size=10):
     """
     Klasyczny algorytm tabu z losowym startem
     :param num_vertices: liczba wierzchołków
@@ -10,7 +11,8 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
     :return: najlepsze cięcie
     """
     i = 0
-    tabu_list = []  # Będzie przechowywać całe rozwiązania (partycje), a nie tylko wierzchołki
+    tabu_list = []
+    history = []
 
     solution = random_probe(num_vertices)
     cut = goal_function(edges, solution)
@@ -28,31 +30,43 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
         best_neighbour = None
         best_neighbour_cut = -1
         best_move = None
+        available_work_points = []
 
-        for vertex in range(num_vertices):
-            neighbour = solution.copy()
-            neighbour[vertex] = 1 - neighbour[vertex]
+        neighbours = generate_neighbours(num_vertices, solution)
+
+        for neighbour in neighbours:
             neigh_cut = goal_function(edges, neighbour)
-
-            move = vertex
 
             if neighbour not in tabu_list or neigh_cut > best_cut:
                 if neigh_cut > best_neighbour_cut:
                     best_neighbour = neighbour
                     best_neighbour_cut = neigh_cut
-                    best_move = move
+                    best_move = neighbour
+                available_work_points.append((neighbour, neigh_cut))
 
         if best_neighbour is None:
-            print(
-                f"{i + 1:<10} {str(solution):<30} {cut:<10} {'-':<30} {'-':<15} {'-':<10} {str(tabu_list):<20} Brak dostępnych ruchów"
-            )
+            get_from_history = back_to_work_point(history, edges, tabu_list)
+            if get_from_history:
+                solution = get_from_history["solution"]
+                cut = get_from_history["cut"]
+                print(
+                    f"{i + 1:<10} {str(solution):<30} {cut:<10} {'-':<30} {'-':<15} {'-':<10} {str(tabu_list):<20} Cofnięce do punktu roboczego: {solution} / {cut}"
+                )
+                continue
+            else:
+                print(
+                    f"{i + 1:<10} {str(solution):<30} {cut:<10} {'-':<30} {'-':<15} {'-':<10} {str(tabu_list):<20} Brak dostępnych ruchów"
+                )
             break
+
+        history.append({"solution": solution[:], "cut": cut})
+        if len(history) > history_size:
+            history.pop(0)
 
         solution = best_neighbour
         cut = best_neighbour_cut
 
         tabu_list.append(best_neighbour)
-
         if len(tabu_list) > tabu_size:
             tabu_list.pop(0)
 
@@ -63,7 +77,7 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10):
             action = "Nowy najlepszy wynik"
 
         print(
-            f"{i + 1:<10} {str(solution):<30} {cut:<10} {str(best_neighbour):<30} {best_neighbour_cut:<15} {best_move:<10} {str(tabu_list):<20} {action:<20}"
+            f"{i + 1:<10} {str(solution):<30} {cut:<10} {str(best_neighbour):<30} {best_neighbour_cut:<15} {str(best_move):<10} {str(tabu_list):<20} {action:<20}"
         )
 
         i += 1
@@ -99,4 +113,3 @@ if __name__ == "__main__":
     print("\nPodsumowanie:")
     print(f"Wartość cięcia: {max_cut}")
     print(f"Najlepsze rozwiązanie: {best_solution}")
-    print(f"Weryfikacja: {goal_function(edges, best_solution)}")

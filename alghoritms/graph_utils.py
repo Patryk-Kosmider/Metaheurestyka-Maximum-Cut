@@ -81,3 +81,26 @@ def generate_all_solutions(num_vertices):
     for solution in itertools.product([0, 1], repeat=num_vertices):
         all_solutions.append(list(solution))
     return all_solutions
+
+def back_to_work_point(working_points, edges, tabu_list):
+    """
+    Szukamy możliwego powrotu algorytmu do tabu, do porzedniego punktu roboczego.
+    Musimy spełnić kryteria -> punkt nie może już istnieć w liście tabu, a jego funkcja celu
+    powinna osiągnąć lepszy wynik niż obecny punkt.
+    :param working_points: Przechowywane punkty robocze
+    :param edges: lista krawędzi
+    :param tabu_list: lista tabu, z zakazanymi punktami.
+    :return: Punkt roboczy jeśli jest dostępny, w przeciwnym przypadku None
+    """
+    while working_points:
+        working_point = working_points.pop()
+        neighbours = generate_neighbours(len(working_point["solution"]), working_point["solution"])
+        for neighbour in neighbours:
+            if neighbour not in tabu_list:
+                neigh_cut = goal_function(edges, neighbour)
+                if neigh_cut > working_point["cut"]:
+                    print(f"Znaleziono punkt roboczy, który nie jest zakazany, a oferuje lepszy wynik: {neigh_cut} > {working_point["cut"]}")
+                    return working_point
+            else:
+                print(f"Nie ma dostępnych punktów roboczych, które mogłyby poprawić wynik")
+                return None
