@@ -42,6 +42,7 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10, history
                     best_neighbour = neighbour
                     best_neighbour_cut = neigh_cut
                     best_move = neighbour
+
                 available_work_points.append((neighbour, neigh_cut))
 
         if best_neighbour is None:
@@ -113,3 +114,4 @@ if __name__ == "__main__":
     print("\nPodsumowanie:")
     print(f"Wartość cięcia: {max_cut}")
     print(f"Najlepsze rozwiązanie: {best_solution}")
+
