@@ -91,6 +91,7 @@ def genetic_algorithm(
     mutation_multiple_rate=0.2,
     crossover_rate=0.5,
     max_no_improvement=20,
+    elite_size=3
 ):
     population = [random_probe(num_vertices) for _ in range(population_size)]
     best_solution = max(population, key=lambda x: goal_function(edges, x))
@@ -127,6 +128,13 @@ def genetic_algorithm(
                 )
 
             new_population.extend([child1, child2])
+
+        if elite_size > 0:
+            elite = sorted(population, key=lambda x: goal_function(edges, x), reverse=True)[:elite_size]
+            new_population = sorted(new_population, key=lambda x: goal_function(edges, x), reverse=True)[
+                             :population_size - elite_size]
+            print(f"Elita generacji {generation}: przenosimy {elite_size} osobników do nowej populacji {elite} ")
+            new_population.extend(elite)
 
         population = new_population[:population_size]
 
