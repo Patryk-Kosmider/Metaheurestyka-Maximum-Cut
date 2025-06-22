@@ -94,6 +94,11 @@ def genetic_algorithm(
     elite_size=3
 ):
     population = [random_probe(num_vertices) for _ in range(population_size)]
+
+    # Punkt startowy
+    start_point = population[0]
+    start_cut = goal_function(edges,start_point)
+
     best_solution = max(population, key=lambda x: goal_function(edges, x))
     best_value = goal_function(edges, best_solution)
     no_improvement = 0
@@ -106,8 +111,11 @@ def genetic_algorithm(
         new_population = []
 
         while len(new_population) < population_size:
-            parent1 = selection_tournament(population, edges)
-            parent2 = selection_tournament(population, edges)
+            while True:
+                parent1 = selection_tournament(population, edges)
+                parent2 = selection_tournament(population, edges)
+                if parent1 != parent2:
+                    break
 
             if crossover_type == "onepoint":
                 child1, child2 = crossover_onepoint_random(parent1, parent2)
@@ -164,7 +172,7 @@ def genetic_algorithm(
             if generation + 1 >= max_generations:
                 break
 
-    return best_value, best_solution, generation, population
+    return best_value, best_solution, generation, population, start_point, start_cut
 
 
 if __name__ == "__main__":
@@ -227,7 +235,7 @@ if __name__ == "__main__":
         f"Max no improvement generations: 20\n"
     )
 
-    best_value, best_solution, generation, population = genetic_algorithm(
+    best_value, best_solution, generation, population, start_point, start_cut = genetic_algorithm(
         num_vertices,
         edges,
         crossover_type=args.crossover_type,
@@ -241,8 +249,6 @@ if __name__ == "__main__":
         max_no_improvement=args.max_generations_no_improvement,
     )
 
-    start_point = population[0]
-    start_cut = goal_function(edges, start_point)
 
     print("\nPodsumowanie:")
     print(f"Punkt startowy: {start_point}, cięcie: {start_cut}")
