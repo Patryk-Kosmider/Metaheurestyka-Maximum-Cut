@@ -16,6 +16,9 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10, history
 
     solution = random_probe(num_vertices)
     cut = goal_function(edges, solution)
+
+    history.append({"solution": solution[:], "cut": cut})
+
     print(f"Punkt startowy: {solution}, cięcie: {cut}")
 
     best_solution = solution[:]
@@ -30,22 +33,23 @@ def tabu_search(num_vertices, edges, max_iterations=10000, tabu_size=10, history
         best_neighbour = None
         best_neighbour_cut = -1
         best_move = None
-        available_work_points = []
 
         neighbours = generate_neighbours(num_vertices, solution)
 
         for neighbour in neighbours:
             neigh_cut = goal_function(edges, neighbour)
 
-            if neighbour not in tabu_list or neigh_cut > best_cut:
+            if neighbour not in tabu_list and neigh_cut > best_cut:
                 if neigh_cut > best_neighbour_cut:
                     best_neighbour = neighbour
                     best_neighbour_cut = neigh_cut
                     best_move = neighbour
 
-                available_work_points.append((neighbour, neigh_cut))
+            else:
+                print(f"NEIGHBOR ODRZUCONY (tabu & niepoprawia): {neighbour}, cut={neigh_cut}")
 
         if best_neighbour is None:
+            print(f"Brak dostępnych sąsiadów w iteracji {i}")
             get_from_history = back_to_work_point(history, edges, tabu_list)
             if get_from_history:
                 solution = get_from_history["solution"]

@@ -101,6 +101,5 @@ def back_to_work_point(working_points, edges, tabu_list):
                 if neigh_cut > working_point["cut"]:
                     print(f"Znaleziono punkt roboczy, który nie jest zakazany, a oferuje lepszy wynik: {neigh_cut} > {working_point["cut"]}")
                     return working_point
-            else:
-                print(f"Nie ma dostępnych punktów roboczych, które mogłyby poprawić wynik")
-                return None
+    print(f"Nie ma dostępnych punktów roboczych, które mogłyby poprawić wynik")
+    return None
